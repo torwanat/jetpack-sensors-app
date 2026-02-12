@@ -168,7 +168,8 @@ fun NotificationControls() {
             .setSmallIcon(R.drawable.outline_android_24)
             .setContentTitle("Test test")
             .setContentText("Test test test")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setStyle(NotificationCompat.BigTextStyle().bigText("Test test test test test test test"))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 

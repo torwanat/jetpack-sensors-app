@@ -4,6 +4,12 @@ import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import android.icu.text.DecimalFormat
+import android.icu.text.DecimalFormatSymbols
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -15,15 +21,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -92,6 +104,7 @@ fun SettingsScreenBody(
                 Text(text = "Go back to chat")
             }
             NotificationControls()
+            LightSensorControls()
         }
     }
 }
@@ -173,7 +186,52 @@ fun NotificationControls() {
     }) {
         Text(text = "Send notification")
     }
+}
 
+@Composable
+fun LightSensorControls() {
+    val context = LocalContext.current
+    var lightLevel by remember { mutableFloatStateOf(0f) }
+    val decimalSymbols = DecimalFormatSymbols()
+    decimalSymbols.decimalSeparator = ','
+    val decimalFormatter = DecimalFormat("#.#", decimalSymbols)
+
+    DisposableEffect(context) {
+        val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        val lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+        if (lightSensor != null) {
+            val listener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent?) {
+                    event?.let {
+                        if (it.sensor.type == Sensor.TYPE_LIGHT) {
+                            lightLevel = it.values[0]
+                        }
+                    }
+                }
+                override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            }
+            sensorManager.registerListener(listener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+            onDispose {
+                sensorManager.unregisterListener(listener)
+            }
+        }
+        onDispose {}
+    }
+
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50.dp))
+            .clip(RoundedCornerShape(50.dp)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "Light Level: ${decimalFormatter.format(lightLevel)}",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.padding(16.dp)
+        )
+    }
 }
 
 fun Context.savePhoto(photoUri: Uri) : String {

@@ -205,6 +205,11 @@ fun LightSensorControls() {
                 override fun onSensorChanged(event: SensorEvent?) {
                     event?.let {
                         if (it.sensor.type == Sensor.TYPE_LIGHT) {
+                            if (lightLevel - it.values[0] > 200){
+                                sendLightSensorNotification(context, decimalFormatter.format(it.values[0]), "darker")
+                            } else if (lightLevel - it.values[0] < -200){
+                                sendLightSensorNotification(context, decimalFormatter.format(it.values[0]), "brighter")
+                            }
                             lightLevel = it.values[0]
                         }
                     }
@@ -232,6 +237,33 @@ fun LightSensorControls() {
             style = MaterialTheme.typography.bodyMedium,
             modifier = Modifier.padding(16.dp)
         )
+    }
+}
+
+fun sendLightSensorNotification(context: Context, lightLevel: String, change: String) {
+    val intent = Intent(context, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
+    val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setSmallIcon(R.drawable.outline_brightness_7_24)
+        .setContentTitle("Light level change")
+        .setContentText("It is now $change")
+        .setStyle(NotificationCompat.BigTextStyle().bigText("The current light level is $lightLevel"))
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
+
+    with(NotificationManagerCompat.from(context)) {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            return@with
+        }
+        notify(1, builder.build())
     }
 }
 

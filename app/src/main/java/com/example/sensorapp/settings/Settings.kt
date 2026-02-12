@@ -169,7 +169,8 @@ fun NotificationControls() {
             .setContentTitle("A notification")
             .setContentText("One of the notifications of all time")
             .setStyle(NotificationCompat.BigTextStyle().bigText("It even has an extendable body text"))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_EVENT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
@@ -251,7 +252,8 @@ fun sendLightSensorNotification(context: Context, lightLevel: String, change: St
         .setContentTitle("Light level change")
         .setContentText("It is now $change")
         .setStyle(NotificationCompat.BigTextStyle().bigText("The current light level is $lightLevel"))
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setCategory(NotificationCompat.CATEGORY_EVENT)
         .setContentIntent(pendingIntent)
         .setAutoCancel(true)
 

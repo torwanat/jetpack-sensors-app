@@ -1,6 +1,9 @@
 package com.example.sensorapp.settings
 
+import android.Manifest
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -24,12 +27,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.example.sensorapp.AppViewModelProvider
+import com.example.sensorapp.MainActivity
+import com.example.sensorapp.R
+import com.example.sensorapp.constants.Notifications.CHANNEL_ID
 import com.example.sensorapp.navigation.Routes
 import com.example.sensorapp.ui.theme.SensorAppTheme
 import java.io.File
@@ -82,6 +91,7 @@ fun SettingsScreenBody(
             }) {
                 Text(text = "Go back to chat")
             }
+            NotificationControls()
         }
     }
 }
@@ -126,6 +136,44 @@ fun PhotoContainer(settingsUiState: SettingsViewModel.SettingsUiState, onImageCh
         }
 
     }
+}
+
+@Composable
+fun NotificationControls() {
+    val context = LocalContext.current
+    val intent = Intent(context, MainActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) {}
+
+
+    Button(onClick = {
+        val builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.outline_android_24)
+            .setContentTitle("Test test")
+            .setContentText("Test test test")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
+
+        with(NotificationManagerCompat.from(context)) {
+            if (ActivityCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                return@with
+            }
+            notify(0, builder.build())
+        }
+    }) {
+        Text(text = "Send notification")
+    }
+
 }
 
 fun Context.savePhoto(photoUri: Uri) : String {

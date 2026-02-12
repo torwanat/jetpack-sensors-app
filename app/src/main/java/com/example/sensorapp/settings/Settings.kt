@@ -166,10 +166,10 @@ fun NotificationControls() {
     Button(onClick = {
         val builder = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.outline_android_24)
-            .setContentTitle("Test test")
-            .setContentText("Test test test")
-            .setStyle(NotificationCompat.BigTextStyle().bigText("Test test test test test test test"))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setContentTitle("A notification")
+            .setContentText("One of the notifications of all time")
+            .setStyle(NotificationCompat.BigTextStyle().bigText("It even has an extendable body text"))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
@@ -251,7 +251,7 @@ fun sendLightSensorNotification(context: Context, lightLevel: String, change: St
         .setContentTitle("Light level change")
         .setContentText("It is now $change")
         .setStyle(NotificationCompat.BigTextStyle().bigText("The current light level is $lightLevel"))
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
         .setContentIntent(pendingIntent)
         .setAutoCancel(true)
 
